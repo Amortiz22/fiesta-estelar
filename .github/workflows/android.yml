@@ -12,32 +12,50 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Versión fija: trae Android SDK y Java preinstalados (ubuntu-latest está migrando a Ubuntu 26)
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
 
-      - uses: android-actions/setup-android@v3
+      - name: Comprobar Android SDK
+        id: sdk
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME  ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          if [ -n "$ANDROID_HOME" ] && [ -d "$ANDROID_HOME" ]; then echo "ok=true" >> $GITHUB_OUTPUT; else echo "ok=false" >> $GITHUB_OUTPUT; fi
+
+      - name: Instalar Android SDK (solo si falta)
+        if: steps.sdk.outputs.ok != 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: Comprobar archivos del proyecto
+        run: |
+          ls -la
+          test -f package.json || (echo "❌ package.json no está en la raíz del repositorio. Sube el CONTENIDO de la carpeta fiesta-estelar, no la carpeta." && exit 1)
+          test -f www/index.html || (echo "❌ Falta www/index.html" && exit 1)
 
       - name: Instalar dependencias
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: URL web para invitaciones
         run: echo "window.FIESTA_WEB_URL = 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/';" > www/config.js
 
       - name: Crear proyecto Android (Capacitor)
-        run: npx cap add android
+        run: |
+          rm -rf android
+          npx cap add android
 
       - name: Íconos y pantalla de carga
-        run: npx --yes @capacitor/assets generate --android --iconBackgroundColor '#2a1b5e' --iconBackgroundColorDark '#2a1b5e' --splashBackgroundColor '#120a2e' --splashBackgroundColorDark '#120a2e' || echo "Se usan los íconos por defecto"
+        continue-on-error: true
+        run: npx --yes @capacitor/assets generate --android --iconBackgroundColor '#2a1b5e' --iconBackgroundColorDark '#2a1b5e' --splashBackgroundColor '#120a2e' --splashBackgroundColorDark '#120a2e'
 
       - name: Sincronizar web → Android
         run: npx cap sync android
@@ -46,7 +64,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Renombrar APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk FiestaEstelar.apk
