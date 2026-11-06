@@ -1,0 +1,16 @@
+{
+  "name": "fiesta-estelar",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fiesta Estelar - juego de tablero y minijuegos para Android y navegador",
+  "scripts": {
+    "test": "node tests/simulate.mjs",
+    "serve": "npx --yes http-server www -p 8080 -c-1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  }
+}

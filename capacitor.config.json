@@ -1,0 +1,12 @@
+{
+  "appId": "io.github.fiestaestelar",
+  "appName": "Fiesta Estelar",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#120a2e",
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
