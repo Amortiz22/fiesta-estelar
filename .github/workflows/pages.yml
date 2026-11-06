@@ -1,4 +1,5 @@
 # Publica la versión web en GitHub Pages: https://<usuario>.github.io/<repositorio>/
+# REQUISITO (una sola vez): Settings → Pages → Build and deployment → Source: "GitHub Actions"
 name: Web (GitHub Pages)
 
 on:
@@ -17,14 +18,14 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: www
       - id: deployment
